@@ -1,0 +1,12 @@
+services:
+  nodeapp:
+    container_name: tiktok_project
+    build: .
+    ports:
+      - "3001"
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    environment:
+      - NODE_ENV=development
+    restart: unless-stopped
