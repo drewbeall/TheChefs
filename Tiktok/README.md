@@ -68,7 +68,7 @@ Create `backend/Dockerfile` (example):
 FROM node:18-alpine
 WORKDIR /app
 COPY ../frontend ./frontend
-COPY server.js package*.json .
+COPY server.js package*.json /.
 RUN npm install @supadata/js cors dotenv express
 ENV PORT=3001
 EXPOSE 3001

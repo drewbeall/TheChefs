@@ -8,7 +8,7 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install --production
+RUN npm install @supadata/js cors dotenv express
 
 # Copy all other files
 COPY . .
