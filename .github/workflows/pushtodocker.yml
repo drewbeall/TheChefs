@@ -18,6 +18,6 @@ jobs:
       - name: Build and push Docker images
         uses: docker/build-push-action@v4
         with:
-          context: Tiktok/
+          context: /
           push: true
           tags: drew901s/tiktok:${{github.run_number}}
