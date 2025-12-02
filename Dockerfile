@@ -8,7 +8,7 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install @supadata/js cors dotenv express
+RUN npm install @supadata/js cors dotenv express mysql
 
 # Copy all other files
 COPY . .
