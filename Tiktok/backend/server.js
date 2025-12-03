@@ -5,7 +5,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const { Supadata } = require("@supadata/js");
 const path = require("path");
-const mysql = require("mysql");
+const mysql = require('mysql2');
 
 dotenv.config();
 
@@ -19,16 +19,18 @@ app.use(cors());
 app.use(express.json({ limit: "1mb" }));
 app.use(express.static(FRONTEND_DIR));
 
-//SQL Connection
-const con = mysql.createConnection({
+// Database connection
+let con = mysql.createConnection({
   host: "localhost",
-  user: "user",
-  password: "rootpassword"
+  port: 3307,
+  user: "root",
+  password: "rootpassword",
+  database: "IS436"
 });
 
 con.connect(function(err) {
   if (err) throw err;
-  console.log("Connected!");
+  console.log("MySQL Database connected!");
 });
 
 // Helpers

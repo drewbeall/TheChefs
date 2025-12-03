@@ -10,6 +10,10 @@ services:
     environment:
       - NODE_ENV=development
     restart: unless-stopped
+    networks:
+      - mysql_network
+    depends_on:
+      - db
 
   db:
     image: mysql:8.0  # Specify the version as needed
