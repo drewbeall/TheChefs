@@ -7,7 +7,7 @@ const { Supadata } = require("@supadata/js");
 const path = require("path");
 const mysql = require('mysql2');
 
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, ".env") });
 
 const PORT = process.env.PORT || 3001;
 const FRONTEND_DIR = path.join(__dirname, "../frontend");
@@ -21,8 +21,8 @@ app.use(express.static(FRONTEND_DIR));
 
 // Database connection
 let con = mysql.createConnection({
-  host: "localhost",
-  port: 3307,
+  host: "db",
+  port: 3306,
   user: "root",
   password: "rootpassword",
   database: "IS436"
@@ -32,6 +32,7 @@ con.connect(function(err) {
   if (err) throw err;
   console.log("MySQL Database connected!");
 
+  /*
   const sql = "SELECT recipeID, url, content FROM RECIPE";
     con.query(sql, function (err, results) {
       if (err) {
@@ -41,7 +42,7 @@ con.connect(function(err) {
 
       console.log(results);
     });
-  
+  */
 });
 
 // Helpers
