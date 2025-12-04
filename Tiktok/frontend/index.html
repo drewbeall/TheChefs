@@ -25,7 +25,7 @@
                 <a class="nav-link disabled" aria-current="page" href="#">Home</a>
                 </li>
                 <li class="nav-item">
-                <a class="nav-link" href="#">Feed</a>
+                <a class="nav-link" href="feed.html">Feed</a>
                 </li>
             </ul>
             <form class="d-flex" role="search">
@@ -69,18 +69,26 @@
             <h1>Get a recipe!</h1>
             <br>
             
-            <!-- Recipe Form -->
+            <!-- Search and Select -->
              <form>
+                
                 <div class="input-group">
-                    <select class="form-select" id="inputGroupSelect04" aria-label="Example select with button addon">
+                    <select class="form-select" id="select" aria-label="Example select with button addon">
                         <option value="https://www.tiktok.com/@cookingwithlynja/video/7322531619825257771" selected>McDonalds Recipe</option>
                         <option value="https://www.tiktok.com/@cookingwithlynja/video/7291708072030965035">Buttery Waygu</option>
-                        <option value="3">Three</option>
+                        <option value="https://www.tiktok.com/@cookingwithlynja/video/7285457289421524266">Shishito Peppers</option>
                     </select>
-                    <button onclick="getTranscript(document.getElementById('inputGroupSelect04').value)" class="btn btn-outline-secondary" type="button">Generate</button>
+                    <button onclick="getTranscript(document.getElementById('select').value)" class="btn btn-outline-secondary" type="button">Generate</button>
+                </div>
+                <br>
+                <div class="input-group">  
+                    <input type="text" class="form-control" placeholder="www.tiktok.com/@user/video/123456" id="search"/>
+                    <button onclick="getTranscript(document.getElementById('search').value)" class="btn btn-outline-secondary" type="button" id="button-addon2">Generate</button>
                 </div>
              </form>
             
+             
+
             <br><br>
         </div>
 

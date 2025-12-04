@@ -11,9 +11,9 @@ let con = mysql.createConnection({
 con.connect(function(err) {
   if (err) throw err;
   console.log("Connected!");
-  let sql = "INSERT INTO RECIPE (url, content) VALUES ('https://www.tiktok.com/@cookingwithlynja/video/7322531619825257771','conent here')";
+  let sql = "INSERT INTO RECIPE (url, content) VALUES ('https://www.tiktok.com/@cookingwithlynja/video/7322531619825257771','content here')";
   con.query(sql, function (err, result) {
     if (err) throw err;
-    console.log("Table created");
+    console.log("Insert successful");
   });
 });

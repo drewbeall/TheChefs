@@ -19,7 +19,7 @@ services:
     image: mysql:8.0  # Specify the version as needed
     container_name: tiktok_sql
     environment:
-      MYSQL_DATABASE: TheChefsDB
+      MYSQL_DATABASE: IS436
       MYSQL_USER: user  # Use a non-root user
       MYSQL_PASSWORD: password  # Set a secure password for the user
       MYSQL_ROOT_PASSWORD: rootpassword  # Set a secure root password

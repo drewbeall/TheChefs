@@ -31,6 +31,17 @@ let con = mysql.createConnection({
 con.connect(function(err) {
   if (err) throw err;
   console.log("MySQL Database connected!");
+
+  const sql = "SELECT recipeID, url, content FROM RECIPE";
+    con.query(sql, function (err, results) {
+      if (err) {
+        console.error("DB query error:", err);
+        return sendError(res, 500, "Failed to fetch recipes");
+      }
+
+      console.log(results);
+    });
+  
 });
 
 // Helpers
@@ -58,6 +69,7 @@ app.get("/health", (_req, res) => {
   res.json({ ok: true, status: "ok" });
 });
 
+// Backend endpoint to get and store transcript from Supadata API
 app.post("/transcript", async (req, res) => {
   try {
     const { url } = req.body || {};
@@ -66,6 +78,18 @@ app.post("/transcript", async (req, res) => {
     if (!supadata) return sendError(res, 500, "Server is not configured with SUPADATA_API_KEY");
 
     const result = await supadata.transcript({ url, text: true, mode: "native" });
+
+    // Get content and url for insertion into database
+    const jsonObj = JSON.parse(JSON.stringify(result));
+    //console.log(jsonObj.content);
+    //console.log(url);
+
+    const sql = "INSERT INTO RECIPE (url, content) VALUES (?, ?)";
+    con.query(sql, [url, jsonObj.content], function (err, result) {
+      if (err) throw err;
+      console.log("Insert successful");
+    });
+
     return res.json({ ok: true, data: result });
   } catch (error) {
     const message = error?.response?.data || error?.message || "Unexpected error";
@@ -73,6 +97,18 @@ app.post("/transcript", async (req, res) => {
     return sendError(res, 500, String(message));
   }
 });
+
+app.get("/recipes", async (req, res) => {
+  const sql = "SELECT recipeID, url, content FROM RECIPE";
+  con.query(sql, function (err, results) {
+    if (err) {
+      console.error("DB query error:", err);
+      return sendError(res, 500, "Failed to fetch recipes");
+    }
+    res.json({ ok: true, data: results });
+  });
+});
+
 
 // SPA fallback
 app.use((req, res) => {
