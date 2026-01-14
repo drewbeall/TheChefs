@@ -51,8 +51,6 @@
                     });
                     // Retrieve the data in JSON format
                     const data = await response.json();
-                    //const JSONobject = JSON.parse(data);
-                    //const content = JSONobject.content;
                     
                     console.log('Transcript API response:', data); 
                     document.getElementById("demo").innerHTML = JSON.stringify(data, null, 2);

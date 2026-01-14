@@ -44,6 +44,25 @@
             <h2>Recipies:</h2>  
             <p id="demo"></p>
 
+            <div class="row row-cols-1 row-cols-md-4 g-4" id="recipeGrid">
+                <div class="col">
+                    <div class="card text-start h-100" style="width: 20rem;">
+                        <img src="./content/Book.jpeg" class="card-img-top" alt="...">
+                        <div class="card-body">
+                            <h5 class="card-title">Recipe Name</h5>
+                            <h6 class="card-subtitle mb-2 text-body-secondary">Author's Name</h6>
+                            <p class="card-text">Here is an example of some text here, this is where a short description of the recipe will be put.</p>
+                            
+                        </div>
+                        <div class="card-footer">
+                            <small class="text-body-secondary">Last updated 3 mins ago</small>
+                        </div>
+                     </div>
+                </div>
+            </div>
+
+            <br>
+
             <!-- Script to fetch get request and create cards -->
             <script>
             // Fetch recipes from backend and populate cards
@@ -59,30 +78,28 @@
 
                 // Log the data into console
                 console.log('Recipes API response:', data.data);
-
-                //document.getElementById("demo").innerHTML = JSON.stringify(data, null, 2);
                 
                 data.data.forEach(recipe => {
-                    const card = document.createElement('div');
-                    card.className = 'card mb-3';
-                    card.style = 'max-width: 1024px; margin: 0 auto;';
 
-                    const cardBody = document.createElement('div');
-                    cardBody.className = 'card-body';
-
-                    const title = document.createElement('h5');
-                    title.className = 'card-title';
-                    title.textContent = `Recipe ID: ${recipe.recipeid}`;
-
-                    const content = document.createElement('p');
-                    content.className = 'card-text';
-                    content.textContent = recipe.content;
-
-                    cardBody.appendChild(title);
-                    cardBody.appendChild(content);
-                    card.appendChild(cardBody);
-
-                    document.getElementById('demo').appendChild(card);
+                    // Creates Column for grid placement
+                    const column = document.createElement('div');
+                    column.className = 'col';
+                    column.innerHTML = `
+                    <div class="card text-start h-100" style="width: 20rem;">
+                        <img src="./content/Book.jpeg" class="card-img-top" alt="...">
+                        <div class="card-body">
+                            <h5 class="card-title">${recipe.recipeid}</h5>
+                            <h6 class="card-subtitle mb-2 text-body-secondary">${recipe.url}</h6>
+                            <p class="card-text">${recipe.content}</p>
+                            
+                        </div>
+                        <div class="card-footer">
+                            <small class="text-body-secondary">Last updated 3 mins ago</small>
+                        </div>
+                     </div>
+                    `;
+                
+                    document.getElementById('recipeGrid').appendChild(column);
                 });
 
 
@@ -96,8 +113,6 @@
             // Load recipes when page loads
             document.addEventListener('DOMContentLoaded', loadRecipes);
             </script>
-
-
 
         </div>
 
