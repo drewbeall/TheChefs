@@ -8,7 +8,7 @@
 
 We host our application using Render using a docker container. If you'd like to pull this container for yourself, use the following command:
 ```bash
-docker pull drew901s/tiktok:{current tag # }
+docker pull drew901s/tiktok:{latest}
 ```
 
 
