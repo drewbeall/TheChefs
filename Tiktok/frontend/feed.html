@@ -51,7 +51,7 @@
                         <div class="card-body">
                             <h5 class="card-title">Recipe Name</h5>
                             <h6 class="card-subtitle mb-2 text-body-secondary">Author's Name</h6>
-                            <p class="card-text">Here is an example of some text here, this is where a short description of the recipe will be put.</p>
+                            <p class="card-text" style="overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">Here is an example of some text here, this is where a short description of the recipe will be put.</p>
                             
                         </div>
                         <div class="card-footer">
@@ -84,13 +84,15 @@
                     // Creates Column for grid placement
                     const column = document.createElement('div');
                     column.className = 'col';
+
+                    // Populates card with database data, and inserts card into column
                     column.innerHTML = `
                     <div class="card text-start h-100" style="width: 20rem;">
                         <img src="./content/Book.jpeg" class="card-img-top" alt="...">
                         <div class="card-body">
                             <h5 class="card-title">${recipe.recipeid}</h5>
                             <h6 class="card-subtitle mb-2 text-body-secondary">${recipe.url}</h6>
-                            <p class="card-text">${recipe.content}</p>
+                            <p class="card-text" style="overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical;">${recipe.content}</p>
                             
                         </div>
                         <div class="card-footer">
@@ -99,12 +101,9 @@
                      </div>
                     `;
                 
+                    // Appends card into the grid
                     document.getElementById('recipeGrid').appendChild(column);
                 });
-
-
-
-
                 } catch (err) {
                 console.error('Error loading recipes:', err);
                 }
