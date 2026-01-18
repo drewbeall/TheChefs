@@ -47,6 +47,10 @@
         <!-- Fetch Post Request with Supdata API data -->
         <script>
             async function getTranscript(tiktokUrl) {
+                //Wipe Previous Entries
+                document.getElementById("p_transcript").innerHTML = "";
+                document.getElementById("p_recipe").innerHTML = "";
+
                 try {
                     // Fetch the post request
                     const response = await fetch('/transcript', {
@@ -57,11 +61,14 @@
                     // Retrieve the data in JSON format
                     const data = await response.json();
                     
-                    console.log('Transcript API response:', data); 
-                    document.getElementById("demo").innerHTML = JSON.stringify(data, null, 2);
+                    console.log('Transcript API response:', data.data.transcript); 
+                    console.log('OpenAI Generated Recipe:', data.data.recipe); 
+                    document.getElementById("p_transcript").innerHTML = JSON.stringify(data.data.transcript, null, 2);
+                    document.getElementById("p_recipe").innerHTML = JSON.stringify(data.data.recipe, null, 2);
+
                    
                 } catch (err) {
-                    document.getElementById("demo").innerHTML = 'Request failed: ' + err;
+                    document.getElementById("p_transcript").innerHTML = 'Request failed: ' + err;
                     console.error('Transcript API request failed:', err);
                 }
             }
@@ -101,14 +108,14 @@
         <div class="container text-center">
             <h3>Your Transcript:</h3><br>
 
-            <p id="demo"></p>
+            <p id="p_transcript"></p>
+
+            <h3>Generated Recipe:</h3><br>
+
+            <p id="p_recipe"></p>
          </div>
 
-        <script>
-            function testFunction(value) {
-                document.getElementById("demo").innerHTML = "Hello! The function worked! <br> The tiktok link is: " + value + "!";
-            }
-        </script>
+      
 
 
     </body>

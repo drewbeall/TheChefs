@@ -7,6 +7,7 @@ const { Supadata } = require("@supadata/js");
 const path = require("path");
 //const mysql = require('mysql2');
 const {Pool} = require("pg");
+const OpenAI = require("openai");
 
 dotenv.config({ path: path.join(__dirname, ".env") });
 
@@ -20,6 +21,8 @@ app.use(cors());
 app.use(express.json({ limit: "1mb" }));
 app.use(express.static(FRONTEND_DIR));
 
+//Initalize OpenAI client
+const AI = new OpenAI(process.env.OPENAI_API_KEY);
 
 // Containerized MySQL Database connection
 /*
@@ -47,21 +50,6 @@ const client = new Pool({
   database: 'chefsdb',
   ssl: { rejectUnauthorized: false }  // REQUIRED on Render
 });
-
-// Test function for validating Postgres Connection
-async function validatePG() {
-  try {
-
-    const result = await client.query('SELECT url FROM recipe WHERE recipeID=1');
-    console.log(result.rows);
-
-  } catch (err) {
-    console.error(err);
-  } 
-}
-
-
-//validatePG();
 
 
 // Helpers
@@ -98,34 +86,40 @@ app.post("/transcript", async (req, res) => {
     if (!supadata) return sendError(res, 500, "Server is not configured with SUPADATA_API_KEY");
 
     const result = await supadata.transcript({ url, text: true, mode: "native", lang: "en" });
-
-    // Get content and url for insertion into database
-    const jsonObj = JSON.parse(JSON.stringify(result));
-    //console.log(jsonObj.content);
-    //console.log(url);
-
-    // SQL INSERT
-    /*
-    const sql = "INSERT INTO RECIPE (url, content) VALUES (?, ?)";
-    con.query(sql, [url, jsonObj.content], function (err, result) {
-      if (err) throw err;
-      console.log("Insert successful");
-    });
-    */
+    const transcript = result.content;
 
     // POSTGRES INSERT
     try {
-    //await client.connect();
-
-    const result = await client.query('INSERT INTO recipe (url,content) VALUES ($1,$2)',[url,jsonObj.content]);
+    const PGresult = await client.query('INSERT INTO recipe (url,content) VALUES ($1,$2)',[url,transcript]);
     console.log('Insert successful');
 
     } catch (err) {
       console.error(err);
     }
 
+    // OPENAI REQUEST
+    let recipe;
+    try {
+
+      const response = await AI.responses.create({
+        model: "gpt-5.2",
+        input: `Intake this transcript and create a recipe with cooking instructions based off of it. 
+        It should be structured as follows: Bulleted list of ingredients, followed by a numbered, step by step list of instructions. 
+        Here is the transcript: ` + transcript,
+      });
+      recipe = response.output_text;
+
+    } catch (err) {
+      consoler.error(err);
+      recipe = "Error";
+    }
+    
     // END
-    return res.json({ ok: true, data: result });
+    return res.json({ 
+      ok: true, 
+      data: {transcript, recipe}
+    });
+
   } catch (error) {
     const message = error?.response?.data || error?.message || "Unexpected error";
     console.error("/transcript error:", message);
