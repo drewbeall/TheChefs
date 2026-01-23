@@ -120,7 +120,7 @@ app.post("/transcript", async (req, res) => {
       // OpenAI creates a name for the recipe based off of the recipe it generated.
       const responseName = await AI.responses.create({
         model: "gpt-5.2",
-        input: `Given the recipe that you generated, create a name for the recipe in a few words.
+        input: `Given the recipe that you generated, create a name for the recipe in a few words. Do not wrap it in anything, only generate text.
         Here is the recipe: ` + recipeContents
       });
       recipeName = responseName.output_text;
@@ -128,7 +128,7 @@ app.post("/transcript", async (req, res) => {
       // OpenAI creates a description for the recipe based off the recipe.
       const responseDescription = await AI.responses.create({
         model: "gpt-5.2",
-        input: `Given the recipe that you generated, create a description for the recipe in one or two sentences.
+        input: `Given the recipe that you generated, create a description for the recipe in one or two sentences maximum.
         Here is the recipe:  ` + recipeContents
       });
       recipeDescription = responseDescription.output_text;

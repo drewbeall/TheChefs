@@ -64,20 +64,20 @@
     
                             </ul>
 
-                            <!-- Search Tab Content -->
-                            <div class="tab-content text-start" id="myTabContent">
-                                <div class="tab-pane fade show active p-3" id="home-tab-pane" role="tabpanel" aria-labelledby="search-tab" tabindex="0">
-                                    <h2>Looking for a recipe or video?</h2>
-                                    <p>Insert a TikTok video's link, and we'll see if we've got it!</p>
+                                <!-- Search Tab Content -->
+                                <div class="tab-content text-start" id="myTabContent">
+                                    <div class="tab-pane fade show active p-3" id="home-tab-pane" role="tabpanel" aria-labelledby="search-tab" tabindex="0">
+                                        <h2>Looking for a recipe or video?</h2>
+                                        <p>Insert a TikTok video's link, and we'll see if we've got it!</p>
 
-                                    <form>
-                                        <div class="input-group pe-5 pt-2">  
-                                            <input type="text" class="form-control" placeholder="www.tiktok.com/@user/video/123456" id="search"/>
-                                            <button onclick="getTranscript(document.getElementById('search').value)" class="btn btn-outline-secondary" type="button" id="button-addon2">Search</button>
-                                        </div>
-                                    </form>
+                                        <form>
+                                            <div class="input-group pe-5 pt-2">  
+                                                <input type="text" class="form-control" placeholder="www.tiktok.com/@user/video/123456" id="search"/>
+                                                <button onclick="getTranscript(document.getElementById('search').value)" class="btn btn-outline-secondary" type="button" id="button-addon2">Search</button>
+                                            </div>
+                                        </form>
 
-                                </div>
+                                    </div>
 
                                 <!-- Genereate Recipe Content -->
                                 <div class="tab-pane fade p-3" id="profile-tab-pane" role="tabpanel" aria-labelledby="generate-recipe-tab" tabindex="0">
@@ -106,7 +106,136 @@
                                 <div class="tab-pane fade p-3" id="contact-tab-pane" role="tabpanel" aria-labelledby="create-custom-recipe-tab" tabindex="0">
                                     <h2>Looking to make a recipe yourself?</h2>
                                     <p>You're a Do-It-Yourself kind of person, and I like that.</p>
-                                    
+
+                                    <form class="pe-5">
+                                        <!-- Link -->
+                                        <div class="mb-3">
+                                            <label for="customLink" class="form-label">Link</label>
+                                            <input type="text" class="form-control" placeholder="www.tiktok.com/@user/video/123456" id="customLink" aria-selected="customLink"/>
+                                        </div>
+
+                                        <!-- Name -->
+                                        <div class="mb-3">
+                                            <label for="customName" class="form-label">Recipe Name</label>
+                                            <input type="text" class="form-control" id="customName" aria-selected="customRecipeName">
+                                        </div>
+
+                                        <!-- Description -->
+                                        <div class="mb-3">
+                                            <label for="customDesc" class="form-label">Recipe Description</label>
+                                            <textarea type="text" class="form-control" id="customDesc" rows="3" aria-selected="customRecipeDescription"></textarea>
+                                        </div>
+
+                                        <!-- Ingredients -->
+                                        <div class="mb-3">
+                                            <label for="customIng" class="form-label">Ingredients</label>
+                                            <ul id="customIngredients">
+                                                <li class="mb-1">
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-control" placeholder="Ingredient 1">
+                                                        <button class="btn btn-outline-danger" type="button" onclick="deleteListParent(this)">X</button>
+                                                    </div>
+                                                </li>
+                                                <li class="mb-1">
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-control" placeholder="Ingredient 1">
+                                                        <button class="btn btn-outline-danger" type="button" onclick="deleteListParent(this)">X</button>
+                                                    </div>                                                </li>
+                                                <li class="mb-1">
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-control" placeholder="Ingredient 1">
+                                                        <button class="btn btn-outline-danger" type="button" onclick="deleteListParent(this)">X</button>
+                                                    </div>                                               
+                                                </li>
+                                            </ul>
+                                            <button onclick="addIngredient()"  type="button" class="btn btn-primary mb-3">+Add Ingredient</button>
+                                        </div>
+                                        
+                                        <script>
+                                            let ingredientCount = 3;
+                                            function addIngredient() {
+                                                ingredientCount++;
+                                                const ingredientList = document.getElementById('customIngredients');
+                                                const newListItem = document.createElement('li');
+                                                newListItem.className = 'mb-1';
+
+                                                newListItem.innerHTML=`
+                                                <div class="input-group">
+                                                        <input type="text" class="form-control" placeholder="Ingredient ` + ingredientCount + `">
+                                                        <button class="btn btn-outline-danger" type="button" onclick="deleteListParent(this)">X</button>
+                                                </div> 
+                                                `;
+                                                
+                                                ingredientList.appendChild(newListItem);
+                                            }
+
+                                            function deleteListParent(button) {
+                                                button.closest('li').remove();
+                                            }
+                                        </script>
+
+                                        <!-- Steps -->
+                                        <label for="stepsList" class="form-label">Recipe</label>
+                                        <ol id="stepsList" style="list-style: none;">
+                                            <li>
+                                                <div class="row g-3 align-items-center">
+                                                    <div class="col-auto">
+                                                        <label for="step[]" class="col-form-label">Step 1:</label>
+                                                    </div>
+                                                    <div class="col-auto mb-1">
+                                                        <input type="text" name="step[]" class="form-control" aria-describedby="step">
+                                                    </div>
+                                                    <div class="col-auto">
+                                                        <span class="form-text">
+                                                        Give your step a short name to summarize!
+                                                        </span>
+                                                    </div>
+                                                    <div class="col-auto">
+                                                        <button class="btn btn-outline-danger" type="button" onclick="deleteListParent(this)">X</button>
+                                                    </div>
+                                                </div>
+                                                <label for="customDesc" class="form-label">Step Description</label>
+                                                <textarea type="text" class="form-control" id="customDesc" rows="2" aria-selected="customRecipeDescription"></textarea>
+                                            </li>
+                                        </ol>
+                                        <button onclick="addStep()" type="button" class="btn btn-primary mb-3">+Add Step</button>
+
+                                        <script>
+                                            let stepsCount = 1;
+                                            function addStep(){
+                                                stepsCount++;
+                                                const stepsList = document.getElementById('stepsList');
+                                                const newStep = document.createElement('li');
+                                                newStep.innerHTML = `
+                                                    <hr>
+                                                    <div class="row g-3 align-items-center">
+                                                        <div class="col-auto">
+                                                            <label for="step[]" class="col-form-label">Step ` + stepsCount + `:</label>
+                                                        </div>
+                                                        <div class="col-auto mb-1">
+                                                            <input type="text" name="step[]" class="form-control" aria-describedby="step">
+                                                        </div>
+                                                        <div class="col-auto">
+                                                            <span class="form-text">
+                                                            Give your step a short name to summarize!
+                                                            </span>
+                                                        </div>
+                                                        <div class="col-auto">
+                                                            <button class="btn btn-outline-danger" type="button" onclick="deleteListParent(this)">X</button>
+                                                        </div>
+                                                    </div>
+                                                    <label for="customDesc" class="form-label">Step Description</label>
+                                                    <textarea type="text" name="desc[]" class="form-control" rows="2" aria-selected="customRecipeDescription"></textarea>
+                                                `;
+                                                stepsList.appendChild(newStep);
+                                            }
+
+                                        </script>
+
+
+
+                                    </form>
+
                                 </div>
                             </div>
                         </div>
@@ -156,9 +285,7 @@
                     console.log('Name: ', data.data.recipeName);
                     console.log('Description:', data.data.recipeDescription);
                     console.log('Recipe:', data.data.recipeContents);   
-                    
-
-
+                
                     // Assign data to HTML elements 
                     document.getElementById("p_transcript").innerHTML = JSON.stringify(data.data.transcript, null, 2);
                     document.getElementById("p_name").innerHTML = data.data.recipeName;
