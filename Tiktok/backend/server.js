@@ -98,26 +98,51 @@ app.post("/transcript", async (req, res) => {
     }
 
     // OPENAI REQUEST
-    let recipe;
+    let recipeName;
+    let recipeDescription;
+    let recipeContents;
     try {
 
-      const response = await AI.responses.create({
+      // OpenAI Creates a recipe in HTML based off of video transcript
+      const responseContents = await AI.responses.create({
         model: "gpt-5.2",
         input: `Intake this transcript and create a recipe with cooking instructions based off of it. 
+        This recipe will be written in HTML format. Do not include any wrappers of any kind, as this is meant to plug directly into an HTML object.
         It should be structured as follows: Bulleted list of ingredients, followed by a numbered, step by step list of instructions. 
+        The bulleted list of ingredients will be encased with <h5>.
+        Each step will be a part of an ordered list, with a short name of the step and the number encased in <h3>. 
+        Give the ordered list the styling "list-style: none;"
+        The contents of each step will be encased in <p class="ps-3">
         Here is the transcript: ` + transcript,
       });
-      recipe = response.output_text;
+      recipeContents = responseContents.output_text;
+
+      // OpenAI creates a name for the recipe based off of the recipe it generated.
+      const responseName = await AI.responses.create({
+        model: "gpt-5.2",
+        input: `Given the recipe that you generated, create a name for the recipe in a few words.
+        Here is the recipe: ` + recipeContents
+      });
+      recipeName = responseName.output_text;
+
+      // OpenAI creates a description for the recipe based off the recipe.
+      const responseDescription = await AI.responses.create({
+        model: "gpt-5.2",
+        input: `Given the recipe that you generated, create a description for the recipe in one or two sentences.
+        Here is the recipe:  ` + recipeContents
+      });
+      recipeDescription = responseDescription.output_text;
+
 
     } catch (err) {
       consoler.error(err);
-      recipe = "Error";
+      recipeContents = "Error";
     }
     
     // END
     return res.json({ 
       ok: true, 
-      data: {transcript, recipe}
+      data: {transcript, recipeContents, recipeName, recipeDescription}
     });
 
   } catch (error) {
