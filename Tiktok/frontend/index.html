@@ -132,25 +132,27 @@
                                             <ul id="customIngredients">
                                                 <li class="mb-1">
                                                     <div class="input-group">
-                                                        <input type="text" class="form-control" placeholder="Ingredient 1">
-                                                        <button class="btn btn-outline-danger" type="button" onclick="deleteListParent(this)">X</button>
+                                                        <input type="text" class="form-control" placeholder="Ingredient">
+                                                        <button class="btn btn-outline-danger" type="button" onclick="deleteIngredient(this)">X</button>
                                                     </div>
                                                 </li>
                                                 <li class="mb-1">
                                                     <div class="input-group">
-                                                        <input type="text" class="form-control" placeholder="Ingredient 1">
-                                                        <button class="btn btn-outline-danger" type="button" onclick="deleteListParent(this)">X</button>
-                                                    </div>                                                </li>
+                                                        <input type="text" class="form-control" placeholder="Ingredient">
+                                                        <button class="btn btn-outline-danger" type="button" onclick="deleteIngredient(this)">X</button>
+                                                    </div>                                                
+                                                </li>
                                                 <li class="mb-1">
                                                     <div class="input-group">
-                                                        <input type="text" class="form-control" placeholder="Ingredient 1">
-                                                        <button class="btn btn-outline-danger" type="button" onclick="deleteListParent(this)">X</button>
+                                                        <input type="text" class="form-control" placeholder="Ingredient">
+                                                        <button class="btn btn-outline-danger" type="button" onclick="deleteIngredient(this)">X</button>
                                                     </div>                                               
                                                 </li>
                                             </ul>
                                             <button onclick="addIngredient()"  type="button" class="btn btn-primary mb-3">+Add Ingredient</button>
                                         </div>
                                         
+                                        <!-- Functions for Ingredients-->
                                         <script>
                                             let ingredientCount = 3;
                                             function addIngredient() {
@@ -161,7 +163,7 @@
 
                                                 newListItem.innerHTML=`
                                                 <div class="input-group">
-                                                        <input type="text" class="form-control" placeholder="Ingredient ` + ingredientCount + `">
+                                                        <input type="text" class="form-control" placeholder="Ingredient">
                                                         <button class="btn btn-outline-danger" type="button" onclick="deleteListParent(this)">X</button>
                                                 </div> 
                                                 `;
@@ -169,8 +171,9 @@
                                                 ingredientList.appendChild(newListItem);
                                             }
 
-                                            function deleteListParent(button) {
+                                            function deleteIngredient(button) {
                                                 button.closest('li').remove();
+                                                ingredientCount--;
                                             }
                                         </script>
 
@@ -180,7 +183,7 @@
                                             <li>
                                                 <div class="row g-3 align-items-center">
                                                     <div class="col-auto">
-                                                        <label for="step[]" class="col-form-label">Step 1:</label>
+                                                        <label for="step[]" class="col-form-label">Step Name:</label>
                                                     </div>
                                                     <div class="col-auto mb-1">
                                                         <input type="text" name="step[]" class="form-control" aria-describedby="step">
@@ -191,26 +194,78 @@
                                                         </span>
                                                     </div>
                                                     <div class="col-auto">
-                                                        <button class="btn btn-outline-danger" type="button" onclick="deleteListParent(this)">X</button>
+                                                        <button class="btn btn-outline-danger" type="button" onclick="deleteStep(this)">X</button>
                                                     </div>
                                                 </div>
                                                 <label for="customDesc" class="form-label">Step Description</label>
                                                 <textarea type="text" class="form-control" id="customDesc" rows="2" aria-selected="customRecipeDescription"></textarea>
+                                                <button onclick="addStep(this)" type="button" class="btn btn-primary mb-3 mt-3">+Add Step</button>
+
                                             </li>
                                         </ol>
-                                        <button onclick="addStep()" type="button" class="btn btn-primary mb-3">+Add Step</button>
 
                                         <script>
                                             let stepsCount = 1;
-                                            function addStep(){
+                                            function addStep(button){
+
+                                                //Creates the new step in a <li> element
                                                 stepsCount++;
                                                 const stepsList = document.getElementById('stepsList');
-                                                const newStep = document.createElement('li');
-                                                newStep.innerHTML = `
+                                                const newStep = createBlankStep();
+
+                                                stepsList.appendChild(newStep);
+
+                                                list = document.getElementById('stepsList');
+                                                
+                                                if (button) {
+                                                    const currentLi = button.closest('li');
+                                                    //If there is a child after the current position
+                                                    if (currentLi.nextSibling != null){
+                                                        list.insertBefore(newStep, currentLi.nextSibling);
+                                                    }
+                                                    // End of list
+                                                    else {
+                                                        list.appendChild(newStep);
+                                                    }
+                                                }
+                                                else {
+                                                    stepsList.appendChild(newStep);
+                                                }
+                                                
+
+                                            }
+
+                                            function cleanSteps(){
+                                                //Cleans first step by removing the <hr> generated with every list item
+                                                const hr = list.querySelector('li').querySelector('hr');
+                                                if (hr) {
+                                                    hr.remove();
+                                                }
+                                            }
+
+                                            function deleteStep(button) {
+                                                //Checks to see if this is the last step in the list
+                                                //If so, then it removes it and adds a new, blank step
+                                                button.closest('li').remove();
+                                                stepsCount--;
+
+                                                const list = document.getElementById('stepsList');
+                                                if (list.children.length == 0) {
+                                                    addStep();
+                                                    cleanSteps();
+                                                }
+                                                
+                                                cleanSteps();   
+                                            }
+
+                                            // Creates a blank step and returns the <li> element
+                                            function createBlankStep(){
+                                                const blankStep = document.createElement('li');
+                                                blankStep.innerHTML = `
                                                     <hr>
                                                     <div class="row g-3 align-items-center">
                                                         <div class="col-auto">
-                                                            <label for="step[]" class="col-form-label">Step ` + stepsCount + `:</label>
+                                                            <label for="step[]" class="col-form-label">Step Name:</label>
                                                         </div>
                                                         <div class="col-auto mb-1">
                                                             <input type="text" name="step[]" class="form-control" aria-describedby="step">
@@ -221,13 +276,15 @@
                                                             </span>
                                                         </div>
                                                         <div class="col-auto">
-                                                            <button class="btn btn-outline-danger" type="button" onclick="deleteListParent(this)">X</button>
+                                                            <button class="btn btn-outline-danger" type="button" onclick="deleteStep(this)">X</button>
                                                         </div>
                                                     </div>
                                                     <label for="customDesc" class="form-label">Step Description</label>
                                                     <textarea type="text" name="desc[]" class="form-control" rows="2" aria-selected="customRecipeDescription"></textarea>
+                                                    <button onclick="addStep()" type="button" class="btn btn-primary mb-3 mt-3">+Add Step</button>
+
                                                 `;
-                                                stepsList.appendChild(newStep);
+                                                return blankStep;
                                             }
 
                                         </script>
