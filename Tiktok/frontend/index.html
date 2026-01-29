@@ -107,49 +107,49 @@
                                     <h2>Looking to make a recipe yourself?</h2>
                                     <p>You're a Do-It-Yourself kind of person, and I like that.</p>
 
-                                    <form class="pe-5">
+                                    <form class="pe-5" id="recipeForm">
                                         <!-- Link -->
                                         <div class="mb-3">
                                             <label for="customLink" class="form-label">Link</label>
-                                            <input type="text" class="form-control" placeholder="www.tiktok.com/@user/video/123456" id="customLink" aria-selected="customLink"/>
+                                            <input type="text" class="form-control" placeholder="www.tiktok.com/@user/video/123456" id="customLink" name="customLink" aria-selected="customLink"/>
                                         </div>
 
                                         <!-- Name -->
                                         <div class="mb-3">
                                             <label for="customName" class="form-label">Recipe Name</label>
-                                            <input type="text" class="form-control" id="customName" aria-selected="customRecipeName">
+                                            <input type="text" class="form-control" id="customName" name="customName" aria-selected="customRecipeName">
                                         </div>
 
                                         <!-- Description -->
                                         <div class="mb-3">
                                             <label for="customDesc" class="form-label">Recipe Description</label>
-                                            <textarea type="text" class="form-control" id="customDesc" rows="3" aria-selected="customRecipeDescription"></textarea>
+                                            <textarea type="text" class="form-control" id="customDesc" name="customDesc" rows="3" aria-selected="customRecipeDescription"></textarea>
                                         </div>
 
                                         <!-- Ingredients -->
                                         <div class="mb-3">
-                                            <label for="customIng" class="form-label">Ingredients</label>
+                                            <label for="customIngredients" class="form-label">Ingredients</label>
                                             <ul id="customIngredients">
                                                 <li class="mb-1">
                                                     <div class="input-group">
-                                                        <input type="text" class="form-control" placeholder="Ingredient">
+                                                        <input type="text" class="form-control" name="ingredients" placeholder="Ingredient">
                                                         <button class="btn btn-outline-danger" type="button" onclick="deleteIngredient(this)">X</button>
                                                     </div>
                                                 </li>
                                                 <li class="mb-1">
                                                     <div class="input-group">
-                                                        <input type="text" class="form-control" placeholder="Ingredient">
-                                                        <button class="btn btn-outline-danger" type="button" onclick="deleteIngredient(this)">X</button>
+                                                        <input type="text" class="form-control" name="ingredients" placeholder="Ingredient">
+                                                        <button class="btn btn-outline-danger" name="ingredients" type="button" onclick="deleteIngredient(this)">X</button>
                                                     </div>                                                
                                                 </li>
                                                 <li class="mb-1">
                                                     <div class="input-group">
-                                                        <input type="text" class="form-control" placeholder="Ingredient">
+                                                        <input type="text" class="form-control" name="ingredients" placeholder="Ingredient">
                                                         <button class="btn btn-outline-danger" type="button" onclick="deleteIngredient(this)">X</button>
                                                     </div>                                               
                                                 </li>
                                             </ul>
-                                            <button onclick="addIngredient()"  type="button" class="btn btn-primary mb-3">+Add Ingredient</button>
+                                            <button onclick="addIngredient()" type="button" class="btn btn-primary mb-3">+Add Ingredient</button>
                                         </div>
                                         
                                         <!-- Functions for Ingredients-->
@@ -163,7 +163,7 @@
 
                                                 newListItem.innerHTML=`
                                                 <div class="input-group">
-                                                        <input type="text" class="form-control" placeholder="Ingredient">
+                                                        <input type="text" class="form-control" name="ingredients" placeholder="Ingredient">
                                                         <button class="btn btn-outline-danger" type="button" onclick="deleteListParent(this)">X</button>
                                                 </div> 
                                                 `;
@@ -183,10 +183,10 @@
                                             <li>
                                                 <div class="row g-3 align-items-center">
                                                     <div class="col-auto">
-                                                        <label for="step[]" class="col-form-label">Step Name:</label>
+                                                        <label for="steps[]" class="col-form-label">Step Name:</label>
                                                     </div>
                                                     <div class="col-auto mb-1">
-                                                        <input type="text" name="step[]" class="form-control" aria-describedby="step">
+                                                        <input type="text" name="stepNames" class="form-control" aria-describedby="step">
                                                     </div>
                                                     <div class="col-auto">
                                                         <span class="form-text">
@@ -198,7 +198,7 @@
                                                     </div>
                                                 </div>
                                                 <label for="customDesc" class="form-label">Step Description</label>
-                                                <textarea type="text" class="form-control" id="customDesc" rows="2" aria-selected="customRecipeDescription"></textarea>
+                                                <textarea type="text" name="stepDescs" class="form-control" rows="2" aria-selected="customRecipeDescription"></textarea>
                                                 <button onclick="addStep(this)" type="button" class="btn btn-primary mb-3 mt-3">+Add Step</button>
 
                                             </li>
@@ -268,7 +268,7 @@
                                                             <label for="step[]" class="col-form-label">Step Name:</label>
                                                         </div>
                                                         <div class="col-auto mb-1">
-                                                            <input type="text" name="step[]" class="form-control" aria-describedby="step">
+                                                            <input type="text" name="stepNames" class="form-control" aria-describedby="step">
                                                         </div>
                                                         <div class="col-auto">
                                                             <span class="form-text">
@@ -280,16 +280,37 @@
                                                         </div>
                                                     </div>
                                                     <label for="customDesc" class="form-label">Step Description</label>
-                                                    <textarea type="text" name="desc[]" class="form-control" rows="2" aria-selected="customRecipeDescription"></textarea>
+                                                    <textarea type="text" name="stepDescs" class="form-control" rows="2" aria-selected="customRecipeDescription"></textarea>
                                                     <button onclick="addStep()" type="button" class="btn btn-primary mb-3 mt-3">+Add Step</button>
 
                                                 `;
                                                 return blankStep;
                                             }
 
+                                            function submitCustomRecipe() {
+                                                const formData = new FormData(document.getElementById('recipeForm'));
+                                                console.log('Submitting data...');
+
+                                                const data = {
+                                                    customLink: formData.get('customLink'),
+                                                    customName: formData.get('customName'),
+                                                    customDesc: formData.get('customDesc'),
+                                                    ingredients: formData.getAll('ingredients'),
+                                                    stepNames: formData.getAll('stepNames'),
+                                                    stepDescs: formData.getAll('stepDescs')
+                                                }
+                                                
+                                                fetch('/submitCustomRecipe',{
+                                                    method: 'POST',
+                                                    headers: {'Content-Type': 'application/json'},
+                                                    body: JSON.stringify(data)
+                                                });
+
+                                            }
+
                                         </script>
 
-
+                                        <button type="button" onclick="submitCustomRecipe()" class="btn btn-primary mb-3 mt-3">Submit Recipe</button>
 
                                     </form>
 

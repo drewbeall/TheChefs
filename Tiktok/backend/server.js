@@ -19,6 +19,7 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json({ limit: "1mb" }));
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(FRONTEND_DIR));
 
 //Initalize OpenAI client
@@ -152,7 +153,8 @@ app.post("/transcript", async (req, res) => {
   }
 });
 
-app.get("/recipes", async (req, res) => {
+//Endpoint to get recipies from database
+app.get("/recipes", async (__req, res) => {
   // SQL GET
   /*
   const sql = "SELECT recipeID, url, content FROM RECIPE";
@@ -180,6 +182,38 @@ app.get("/recipes", async (req, res) => {
     res.json({ ok: true, data: result.rows });
 
 });
+
+app.post('/submitCustomRecipe', async (req,res) => {
+  const data = req.body;
+
+  /*
+  //Console logs to verify backend reception
+  console.log(data.customLink)
+  console.log(data.customName);
+  console.log(data.customDesc);
+  console.log(data.ingredients);
+  console.log(data.stepNames);
+  console.log(data.stepDescs);
+  */
+
+  try {
+    const PGresult = await client.query(`INSERT INTO recipes (url,recipeName,recipeDescription,ingredients,stepNames,stepDescs) 
+      VALUES ($1,$2,$3,$4,$5,$6)`,[data.customLink,data.customName,data.customDesc,data.ingredients,data.stepNames,data.stepDescs]);
+    console.log('Insert in RECIPIES successful');
+
+    } catch (err) {
+      console.log('There was an error inserting your data into RECIPIES')
+      console.error(err);
+    }
+
+
+
+
+
+
+
+});
+
 
 
 // SPA fallback
