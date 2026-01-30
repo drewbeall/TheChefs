@@ -154,18 +154,8 @@ app.post("/transcript", async (req, res) => {
 });
 
 //Endpoint to get recipies from database
-app.get("/recipes", async (__req, res) => {
-  // SQL GET
-  /*
-  const sql = "SELECT recipeID, url, content FROM RECIPE";
-  con.query(sql, function (err, results) {
-    if (err) {
-      console.error("DB query error:", err);
-      return sendError(res, 500, "Failed to fetch recipes");
-    }
-    res.json({ ok: true, data: results });
-  });
-  */
+app.get("/recipes", async (_req, res) => {
+  
 
   // POSGRES GET
   let result;
@@ -196,9 +186,14 @@ app.post('/submitCustomRecipe', async (req,res) => {
   console.log(data.stepDescs);
   */
 
+  //Link Cleaning
+  const url = new URL(data.customLink);
+  url.search = "";
+  const cleanLink = url.toString();
+
   try {
     const PGresult = await client.query(`INSERT INTO recipes (url,recipeName,recipeDescription,ingredients,stepNames,stepDescs) 
-      VALUES ($1,$2,$3,$4,$5,$6)`,[data.customLink,data.customName,data.customDesc,data.ingredients,data.stepNames,data.stepDescs]);
+      VALUES ($1,$2,$3,$4,$5,$6)`,[cleanLink,data.customName,data.customDesc,data.ingredients,data.stepNames,data.stepDescs]);
     console.log('Insert in RECIPIES successful');
 
     } catch (err) {
@@ -214,7 +209,18 @@ app.post('/submitCustomRecipe', async (req,res) => {
 
 });
 
+//Page routes for clean urls
+app.get('/feed',(req,res) =>{
+  res.sendFile(path.join(FRONTEND_DIR,"feed.html"))
+});
 
+app.get('/login',(req,res) =>{
+  res.sendFile(path.join(FRONTEND_DIR,"login.html"))
+});
+
+app.get('/register',(req,res) =>{
+  res.sendFile(path.join(FRONTEND_DIR,"register.html"))
+});
 
 // SPA fallback
 app.use((req, res) => {
