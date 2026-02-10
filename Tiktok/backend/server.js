@@ -176,16 +176,6 @@ app.get("/recipes", async (_req, res) => {
 app.post('/submitCustomRecipe', async (req,res) => {
   const data = req.body;
 
-  /*
-  //Console logs to verify backend reception
-  console.log(data.customLink)
-  console.log(data.customName);
-  console.log(data.customDesc);
-  console.log(data.ingredients);
-  console.log(data.stepNames);
-  console.log(data.stepDescs);
-  */
-
   //Link Cleaning
   const url = new URL(data.customLink);
   url.search = "";
@@ -200,18 +190,32 @@ app.post('/submitCustomRecipe', async (req,res) => {
       console.log('There was an error inserting your data into RECIPIES')
       console.error(err);
     }
+});
 
+//Details GET query to retrieve relevent recipies from database
+app.get('/details/data', async (req,res) => {
+  let result;
+    try {
+      result = await client.query(`SELECT recipesid, url, recipename, recipedescription, ingredients, stepnames, stepdescs 
+        FROM recipes WHERE url LIKE $1;`,[`%${req.query.url}%`]);
+      console.log('Get successful');
 
+      } catch (err) {
+        console.error(err);
+        console.log('Recipies GET failed');
+      }
 
-
-
-
-
+      res.json({ ok: true, data: result.rows });
 });
 
 //Page routes for clean urls
 app.get('/feed',(req,res) =>{
   res.sendFile(path.join(FRONTEND_DIR,"feed.html"))
+});
+
+app.get('/details',(req,res) => {
+  const url = req.query.url;
+  res.sendFile(path.join(FRONTEND_DIR,"details.html"))
 });
 
 app.get('/login',(req,res) =>{

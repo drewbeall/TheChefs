@@ -73,11 +73,26 @@
                                         <form>
                                             <div class="input-group pe-5 pt-2">  
                                                 <input type="text" class="form-control" placeholder="www.tiktok.com/@user/video/123456" id="search"/>
-                                                <button onclick="getTranscript(document.getElementById('search').value)" class="btn btn-outline-secondary" type="button" id="button-addon2">Search</button>
+                                                <button onclick="getDetails(document.getElementById('search').value)" class="btn btn-outline-secondary" type="button" id="button-addon2">Search</button>
                                             </div>
                                         </form>
 
-                                    </div>
+                                </div>
+
+                                <script>
+                                    function getDetails(url){                                 
+                                        //Cleans link before sending to details page
+                                        const newUrl = new URL(url);
+                                        newUrl.search = "";
+                                        const cleanLink = newUrl.toString();
+                                        console.log("Searching for:" + cleanLink);
+
+
+                                        window.location.href = `/details?url=${encodeURIComponent(cleanLink)}`;
+                                    }
+                                    
+
+                                </script>
 
                                 <!-- Genereate Recipe Content -->
                                 <div class="tab-pane fade p-3" id="profile-tab-pane" role="tabpanel" aria-labelledby="generate-recipe-tab" tabindex="0">
