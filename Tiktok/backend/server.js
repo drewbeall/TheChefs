@@ -154,7 +154,7 @@ app.post("/transcript", async (req, res) => {
 });
 
 //Endpoint to get recipies from database
-app.get("/recipes", async (_req, res) => {
+app.get("/api/feed", async (_req, res) => {
   
 
   // POSGRES GET
@@ -162,7 +162,7 @@ app.get("/recipes", async (_req, res) => {
   try {
     //await client.connect();
 
-    result = await client.query('SELECT recipeID, url, content FROM recipe');
+    result = await client.query('SELECT recipename, recipedescription, url FROM recipes ORDER BY recipesid DESC');
     console.log('Get successful');
 
     } catch (err) {
@@ -193,7 +193,7 @@ app.post('/submitCustomRecipe', async (req,res) => {
 });
 
 //Details GET query to retrieve relevent recipies from database
-app.get('/details/data', async (req,res) => {
+app.get('/api/details', async (req,res) => {
   let result;
     try {
       result = await client.query(`SELECT recipesid, url, recipename, recipedescription, ingredients, stepnames, stepdescs 

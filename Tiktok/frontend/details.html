@@ -54,15 +54,7 @@
 
                 <!-- Information Column-->
                 <div class="col-6 p-3" id="informationDiv">
-                    <div class="row">
-                        <h1 class="mt-3">Recipe Name</h1>
-                        <h5>Author author author</h5>
-                        <p id="link"><p>
-                        <br>
-                        <h5>description description description description description description description description description description description description description description description description description </h5>
-                        <br>
-                        <p>content content content content in HTML formating</p>
-                    </div>
+                    
                     
             
 
@@ -83,12 +75,12 @@
                     const params = new URLSearchParams(window.location.search);
                     const link = document.getElementById('link');
                     const url = params.get('url');
-                    link.innerHTML = url;
+                    //link.innerHTML = url;
                     console.log(url);
 
                     async function loadRecipes() {
                         try {
-                        const response = await fetch(`/details/data?url=${encodeURIComponent(url)}`);
+                        const response = await fetch(`/api/details?url=${encodeURIComponent(url)}`);
                         const data = await response.json();
                         
                         if (!data.ok || !data.data) {
@@ -99,21 +91,61 @@
                         // Log the data into console
                         console.log('Recipes API response:', data.data);
                         
+                        // Inputs data into the page
                         data.data.forEach(recipe => {
 
                             // Creates row for grid placement
                             const row = document.createElement('div');
-                            row.className = 'row';
+                            row.className = 'row p-3 ps-5 bg-white mt-5 rounded shadow text-start';
 
                             // Populates card with basic database data
                             row.innerHTML = `
                                 <h1 class="mt-3">${recipe.recipename}</h1>
                                 <h5>Author</h5>
-                                <p id="link">${recipe.url}<p>
-                                <h5>${recipe.recipedescription}</h5><br>
-                                <p></p>
+                                <p class="mb-2">${recipe.url}</p>
+                                <h5>${recipe.recipedescription}</h5>
+
+                                <h3>Ingredients</h3>
                             `;
                         
+
+                            // Iterates through ingredients and creates an unordered list
+                            const ul = document.createElement('ul');
+                            ul.className = 'ms-5';
+                            recipe.ingredients.forEach((ingredient) => {
+                                const li = document.createElement('li');
+                                li.innerHTML = ingredient;
+                                ul.appendChild(li);
+                            });
+                            row.appendChild(ul);
+
+                            // Iterates through step
+                            const ol = document.createElement('ol');
+                            ol.style.listStyle = 'none';
+
+                            let stepnum = 0;
+                            recipe.stepnames.forEach((steps,index) => {
+                                stepnum++;
+
+                                //Creates elements
+                                const li = document.createElement('li');
+                                const stepname = document.createElement('h3');
+                                const stepdesc = document.createElement('p');
+
+                                // Establishes needed styling
+                                stepname.style.listStyle = 'none';
+                                stepdesc.className = `ps-3`;
+
+                                //Populates elements
+                                stepname.innerHTML = stepnum + '. ' + recipe.stepnames[index];
+                                stepdesc.innerHTML = recipe.stepdescs[index];
+
+                                li.appendChild(stepname);
+                                li.appendChild(stepdesc);
+                                ol.appendChild(li);
+                            });
+                            row.appendChild(ol);
+
                             // Appends child into the information div
                             document.getElementById('informationDiv').appendChild(row);
                         });

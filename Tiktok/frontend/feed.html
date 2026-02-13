@@ -52,7 +52,7 @@
 
             <div class="row row-cols-1 row-cols-md-4 g-4" id="recipeGrid">
                 <div class="col">
-                    <div class="card text-start h-100" style="width: 20rem;">
+                    <div class="card text-start h-100" style="width: 20rem;" onClick="getDetails(this)">
                         <img src="./content/Book.jpeg" class="card-img-top" alt="...">
                         <div class="card-body">
                             <h5 class="card-title">Recipe Name</h5>
@@ -74,7 +74,7 @@
             // Fetch recipes from backend and populate cards
             async function loadRecipes() {
                 try {
-                const response = await fetch('/recipes');
+                const response = await fetch('/api/feed');
                 const data = await response.json();
                 
                 if (!data.ok || !data.data) {
@@ -93,12 +93,12 @@
 
                     // Populates card with database data, and inserts card into column
                     column.innerHTML = `
-                    <div class="card text-start h-100" style="width: 20rem;">
+                    <div class="card text-start h-100" style="width: 20rem;" onClick="getDetails(this)">
                         <img src="./content/Book.jpeg" class="card-img-top" alt="...">
                         <div class="card-body">
-                            <h5 class="card-title">${recipe.recipeid}</h5>
+                            <h5 class="card-title">${recipe.recipename}</h5>
                             <h6 class="card-subtitle mb-2 text-body-secondary">${recipe.url}</h6>
-                            <p class="card-text" style="overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 5; line-clamp: 5; -webkit-box-orient: vertical;">${recipe.content}</p>
+                            <p class="card-text" style="overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 5; line-clamp: 5; -webkit-box-orient: vertical;">${recipe.recipedescription}</p>
                             
                         </div>
                         <div class="card-footer">
@@ -114,6 +114,18 @@
                 console.error('Error loading recipes:', err);
                 }
             }
+
+            // OnClick for redirecting to a details page based on url
+            function getDetails(card) {
+                const urlElement = card.querySelector('h6');
+                window.location.href = `/details?url=${encodeURIComponent(urlElement.textContent)}`;
+
+            }
+
+
+
+
+
 
             // Load recipes when page loads
             document.addEventListener('DOMContentLoaded', loadRecipes);
