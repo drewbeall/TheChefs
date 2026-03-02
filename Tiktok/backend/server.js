@@ -8,6 +8,7 @@ const path = require("path");
 //const mysql = require('mysql2');
 const {Pool} = require("pg");
 const OpenAI = require("openai");
+const bcrypt = require("bcrypt");
 
 dotenv.config({ path: path.join(__dirname, ".env") });
 
@@ -208,6 +209,100 @@ app.get('/api/details', async (req,res) => {
       res.json({ ok: true, data: result.rows });
 });
 
+app.post('/api/v1/login', async (req,res) => {
+  const data = req.body;
+
+  let result;
+  try {
+
+      //Check to see if username exists
+      result = await client.query(`select userid from users where username = $1;`,[data.username]);
+      } catch (err) {
+        console.error(err);
+        console.log('USERS GET failed');
+      }
+
+      try {
+        if (result.rows.length != 0) {
+        console.log('Username ' + data.username + ' found');
+        const resultPass = await client.query(`select password from users where userid = $1;`,[result.rows[0].userid]);
+
+        //Check hashed password with bcrypt
+        if (bcrypt.compareSync(data.password,resultPass.rows[0].password)) {
+          console.log("Login Success! User logged in as " + data.username);
+        } else {
+          console.log("Login Failed, passwords do not match");
+          }
+        } 
+        else {
+          console.log('Username ' + data.username + ' does not exist');
+        }
+
+      } catch (err) {
+        console.log(err);
+        console.log("PASSWORD CHECK FAILED")
+      }
+      
+});
+
+app.post('/api/v1/register', async (req,res) => {
+  const data = req.body;
+
+  //Hash the password using bcrypt
+  const plaintextPassword = data.password;
+  const hash = bcrypt.hashSync(plaintextPassword, 12);
+  
+
+  //Insert registration data into database
+  let result;
+  try {
+      result = await client.query(`insert into users (username, password, email, name) 
+        values ($1,$2,$3,$4);`,[data.username,hash,data.email,data.name]);
+      console.log('Registration Success')
+      } catch (err) {
+        console.error(err);
+        console.log('Registration Failed');
+      }
+
+
+  
+});
+
+//Check for username and email availibility
+app.get('/api/v1/register/checkAvailibility', async (req,res) => {
+  const data = req.body;
+
+    //Check for username and email availibility
+    let userResult;
+    let emailResult;
+    try {
+      userResult = await client.query(`select username from users 
+          where username = $1;`,[data.username]);
+      emailResult = await client.query(`select email from users 
+          where email = $1;`,[data.email]);
+
+      //If there are no matching usernames or emails, they are available
+      if (userResult.rows.length == 0 || emailResult.rows.length == 0) {
+        res.json({ ok: true});
+      }
+      else {res.json({ ok: false});}    
+        
+    } catch (err) {
+      console.log(err)
+    }
+
+});
+
+
+
+
+
+
+
+
+
+
+
 //Page routes for clean urls
 app.get('/feed',(req,res) =>{
   res.sendFile(path.join(FRONTEND_DIR,"feed.html"))
@@ -234,9 +329,6 @@ app.use((req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
-
-
-
 
 
 

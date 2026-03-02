@@ -8,7 +8,7 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install @supadata/js cors dotenv express mysql2 pg openai
+RUN npm install @supadata/js cors dotenv express mysql2 pg openai bcrypt
 
 # Copy all other files
 COPY . .
