@@ -49,15 +49,26 @@
                 <div class="col-5 bs-body-color">
 
                     <div id="block" class="p-3 bg-white mt-5 rounded shadow text-start">
-                        <form id="registerForm">
+                        <form id="registerForm" class="needs-validation">
                             <h2>Register</h2>
 
                             <div class="row p-3">
-                                <input type="text" name="email" class="form-control mt-3" placeholder="Email" aria-label="Email" >
-                                <input type="text" name="username" class="form-control mt-3" placeholder="Username" aria-label="Username" >
-                                <input type="text" name="name" class="form-control mt-3" placeholder="Name" aria-label="Name">
-                                <input type="text" name="password" class="form-control mt-3" placeholder="Password" aria-label="Password">
-                                <input type="text" name="passwordCheck" class="form-control mt-3" placeholder="Repeat Password" aria-label="Repeat Password">
+                                <div class="row">
+                                    <input type="text" name="email" class="form-control mt-3" placeholder="Email" aria-label="Email" required>
+                                </div>
+                                <div class="row">
+                                    <input type="text" name="username" class="form-control mt-3" placeholder="Username" aria-label="Username" required>
+                                </div>
+                                <div class="row">
+                                    <input type="text" name="name" class="form-control mt-3" placeholder="Name" aria-label="Name">
+                                </div>
+                                <div class="row">
+                                    <input type="text" name="password" class="form-control mt-3" placeholder="Password" aria-label="Password" required>
+                                </div>
+                                <div class="row">
+                                    <input type="text" name="passwordCheck" class="form-control mt-3" placeholder="Repeat Password" aria-label="Repeat Password" required>
+                                </div>
+
 
                             </div>
                             
@@ -65,9 +76,12 @@
 
                         </form>
 
+                        
+
                         <script>
 
-                            function submitRegister(){
+                            async function submitRegister(){
+                                //Form Object is created, data object is created for route
                                 const formData = new FormData(document.getElementById('registerForm'));
                                 console.log('Submitting data...');
 
@@ -75,14 +89,40 @@
                                     email: formData.get('email'),
                                     username: formData.get('username'),
                                     password: formData.get('password'),
+                                    passwordCheck: formData.get('passwordCheck'),
                                     name: formData.get('name')
                                 }
-                                                                                        
-                                fetch('/api/v1/register',{
+                                 
+                                //CheckAvailibility route is called, if the data is OK to be entered into the database, 
+                                //  ok:true is returned. If not, ok:false and a list of issues is returned.
+                                const checkResponse = await fetch('/api/v1/register/validate',{
                                     method: 'POST',
                                     headers: {'Content-Type': 'application/json'},
                                     body: JSON.stringify(data)
                                 });
+
+                                //If the data is OK, and ready to be entered
+                                const checkData = await checkResponse.json();
+                                console.log("Registration Data Validated: " + checkData.ok)
+                                if (checkData.data) {
+                                    const response = await fetch('/api/v1/register',{
+                                        method: 'POST',
+                                        headers: {'Content-Type': 'application/json'},
+                                        body: JSON.stringify(data)
+                                    });
+
+                                    const responseData = await response.json();
+                                    //If the data was entered successfully, redirect to the login page
+                                    if (responseData.ok) {
+                                        window.location.href = '/login';
+                                    }
+                                }
+
+                            }
+
+                            function alerts(issueList){
+
+
                             }
 
                         </script>

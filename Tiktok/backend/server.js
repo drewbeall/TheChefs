@@ -9,6 +9,8 @@ const path = require("path");
 const {Pool} = require("pg");
 const OpenAI = require("openai");
 const bcrypt = require("bcrypt");
+const cookieParser = require("cookie-parser");
+const crypto = require('crypto')
 
 dotenv.config({ path: path.join(__dirname, ".env") });
 
@@ -19,28 +21,13 @@ const app = express();
 
 // Middleware
 app.use(cors());
+app.use(cookieParser());
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(FRONTEND_DIR));
 
 //Initalize OpenAI client
 const AI = new OpenAI(process.env.OPENAI_API_KEY);
-
-// Containerized MySQL Database connection
-/*
-let con = mysql.createConnection({
-  host: "db",
-  port: 3306,
-  user: "root",
-  password: "rootpassword",
-  database: "IS436"
-});
-
-con.connect(function(err) {
-  if (err) throw err;
-  console.log("MySQL Database connected!");
-});
-*/
 
 //Establish Postgres Connection
 
@@ -157,7 +144,6 @@ app.post("/transcript", async (req, res) => {
 //Endpoint to get recipies from database
 app.get("/api/feed", async (_req, res) => {
   
-
   // POSGRES GET
   let result;
   try {
@@ -165,13 +151,11 @@ app.get("/api/feed", async (_req, res) => {
 
     result = await client.query('SELECT recipename, recipedescription, url FROM recipes ORDER BY recipesid DESC');
     console.log('Get successful');
-
     } catch (err) {
       console.error(err);
     }
 
-    res.json({ ok: true, data: result.rows });
-
+    return res.json({ ok: true, data: result.rows });
 });
 
 app.post('/submitCustomRecipe', async (req,res) => {
@@ -190,7 +174,9 @@ app.post('/submitCustomRecipe', async (req,res) => {
     } catch (err) {
       console.log('There was an error inserting your data into RECIPIES')
       console.error(err);
+      return res.json({ ok: false }); 
     }
+    return res.json({ ok: true }); 
 });
 
 //Details GET query to retrieve relevent recipies from database
@@ -225,22 +211,45 @@ app.post('/api/v1/login', async (req,res) => {
       try {
         if (result.rows.length != 0) {
         console.log('Username ' + data.username + ' found');
-        const resultPass = await client.query(`select password from users where userid = $1;`,[result.rows[0].userid]);
+        const userID = result.rows[0].userid
+        const resultPass = await client.query(`select password from users where userid = $1;`,[userID]);
 
         //Check hashed password with bcrypt
         if (bcrypt.compareSync(data.password,resultPass.rows[0].password)) {
+          // User has input the correct login information
+          // Creates / updates cookie, valid for 2 days
+          const sessionID = crypto.randomUUID();
+          res.cookie('sid', sessionID, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 1000 * 60 * 60 * 24 * 2,
+            path: '/'
+          });
+
+          //Inserts session ID into SESSIONS table
+          const sessionQuery = await client.query(
+            `INSERT INTO sessions (sid, user_id, expires_at, ip, user_agent)
+            VALUES ($1, $2, now() + interval '2 days', $3, $4)`,
+            [sessionID, userID, req.ip, req.get('user-agent') || null]
+          );
+
           console.log("Login Success! User logged in as " + data.username);
+          return res.json({ ok: true });
         } else {
           console.log("Login Failed, passwords do not match");
+          return res.status(401).json({ ok: false, error: "Invalid credentials" });
           }
         } 
         else {
           console.log('Username ' + data.username + ' does not exist');
+          return res.status(401).json({ ok: false, error: "Invalid credentials" });
         }
 
       } catch (err) {
         console.log(err);
         console.log("PASSWORD CHECK FAILED")
+        return res.status(500).json({ ok: false, error: "Login failed" });
       }
       
 });
@@ -259,19 +268,51 @@ app.post('/api/v1/register', async (req,res) => {
       result = await client.query(`insert into users (username, password, email, name) 
         values ($1,$2,$3,$4);`,[data.username,hash,data.email,data.name]);
       console.log('Registration Success')
+      return res.json({ ok:true })
       } catch (err) {
         console.error(err);
         console.log('Registration Failed');
+        return res.status(500).json({ ok: false, error: "Login failed" });
       }
 
 
   
 });
 
-//Check for username and email availibility
-app.get('/api/v1/register/checkAvailibility', async (req,res) => {
+app.post('/api/v1/logout', async (req,res) => {
+    // Delete session from database
+    const result = await client.query('DELETE FROM sessions WHERE sid = $1',[req.cookies.sid]);
+
+    // Delete cookie
+    res.clearCookie('sid', { path: '/' });
+    return res.json({ ok: true })
+});
+
+//Returns true or false depending on the existence of a cookie with the 'sid' field
+app.get('/api/v1/loggedIn', (req,res) => {
+    if (!req.cookies.sid) {
+      return res.json({ loggedIn: false})
+    }
+    else {return res.json({ loggedIn: true})}
+    
+});
+
+/*
+  Check for username and email availibility
+  This route returns a list of issues to reflect in frontend 
+  If the list is empty, the account may register
+
+  ISSUES
+  username: This username is already taken
+  email: This email is already taken
+  password: These passwords do not match
+  fields: Not all fields were filled
+
+*/
+app.post('/api/v1/register/validate', async (req,res) => {
   const data = req.body;
 
+    const issueList = [];
     //Check for username and email availibility
     let userResult;
     let emailResult;
@@ -280,17 +321,24 @@ app.get('/api/v1/register/checkAvailibility', async (req,res) => {
           where username = $1;`,[data.username]);
       emailResult = await client.query(`select email from users 
           where email = $1;`,[data.email]);
-
-      //If there are no matching usernames or emails, they are available
-      if (userResult.rows.length == 0 || emailResult.rows.length == 0) {
-        res.json({ ok: true});
-      }
-      else {res.json({ ok: false});}    
-        
     } catch (err) {
-      console.log(err)
+      console.log(err);
     }
 
+    if (userResult.rows.length > 0){issueList.push('username');}
+    if (emailResult.rows.length > 0){issueList.push('email');}
+
+    //Check to make sure passwords match
+    if (data.passwordCheck != data.password) {
+      issueList.push('password');
+    }
+
+    //Check to make sure all fields are input
+    if (!data.email || !data.username || !data.password || !data.passwordCheck || !data.name) {
+      issueList.push('fields');
+    }
+
+    return res.json({ok:true,data:issueList});
 });
 
 
@@ -319,6 +367,14 @@ app.get('/login',(req,res) =>{
 
 app.get('/register',(req,res) =>{
   res.sendFile(path.join(FRONTEND_DIR,"register.html"))
+});
+
+app.get('/profile',(req,res) =>{
+  res.sendFile(path.join(FRONTEND_DIR,"profile.html"))
+});
+
+app.get('/logout',(req,res) =>{
+  res.sendFile(path.join(FRONTEND_DIR,"logout.html"))
 });
 
 // SPA fallback

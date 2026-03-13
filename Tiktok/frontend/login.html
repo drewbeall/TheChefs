@@ -59,7 +59,7 @@
 
                             <div class="row p-3">
                                 <input type="text" name="username" class="form-control mt-3" placeholder="Username or Email" aria-label="Username" >
-                                <input type="text" name="password" class="form-control mt-3" placeholder="Password" aria-label="Password">
+                                <input type="password" name="password" class="form-control mt-3" placeholder="Password" aria-label="Password">
                             </div>
                             <div class="row mb-3 ps-3 pe-3">
                                 <div class="form-check">
@@ -79,7 +79,7 @@
         </div>
 
         <script>
-            function submitLogin(){
+            async function submitLogin(){
                 const formData = new FormData(document.getElementById('loginForm'));
                 console.log('Submitting data...');
 
@@ -88,11 +88,18 @@
                     password: formData.get('password')
                 }
                                                                            
-                fetch('/api/v1/login',{
+                const response = await fetch('/api/v1/login',{
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(data)
                 });
+
+                const responseData = await response.json();
+
+                //If the response is ok, send the user back home
+                if (responseData.ok) {
+                    window.location.href = '/';
+                }
             }
 
 

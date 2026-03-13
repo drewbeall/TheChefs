@@ -25,7 +25,25 @@
                     </li>
                     
                 </ul>
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav ms-auto" id="userNav">
+                    
+                </ul>
+            </div>
+        </nav>
+
+        <script>
+            async function setNavbar() {
+                const list = document.getElementById('userNav')
+
+                const response = await fetch('/api/v1/loggedIn',{
+                    method: 'GET',
+                    headers: {'Content-Type': 'application/json'}
+                });
+
+                const data = await response.json();
+                console.log(data.loggedIn);
+                if (!data.loggedIn) {
+                    list.innerHTML = `
                     <li class="nav-item">
                         <a class="nav-link" href="/login">Login</a>
                     </li>
@@ -34,10 +52,24 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/register">Register</a>
+                    </li>`;
+                }
+                else {
+                    list.innerHTML = `
+                    <li class="nav-item">
+                        <a class="nav-link" href="/profile">Profile</a>
                     </li>
-                </ul>
-            </div>
-        </nav>
+                    <li class="nav-item">
+                        <a class="nav-link" >/</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/logout">Logout</a>
+                    </li>`;
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', setNavbar);
+        </script>
 
         
         <!-- Main Body -->           
