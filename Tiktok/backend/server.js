@@ -10,7 +10,8 @@ const {Pool} = require("pg");
 const OpenAI = require("openai");
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
-const crypto = require('crypto')
+const crypto = require('crypto');
+const rateLimit = require('express-rate-limit');
 
 dotenv.config({ path: path.join(__dirname, ".env") });
 
@@ -20,23 +21,50 @@ const FRONTEND_DIR = path.join(__dirname, "../frontend");
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:3000', 'https://tiktok-7.onrender.com'], 
+  credentials: true, 
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type']
+}));
 app.use(cookieParser());
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(FRONTEND_DIR));
 
+// Initialize rate limiter
+// Can submit 100 requests in a 15 minute window
+app.use(rateLimit({
+	windowMs: 15 * 60 * 1000,
+	limit: 100,
+	standardHeaders: 'draft-8', 
+	legacyHeaders: false, 
+	ipv6Subnet: 56,
+}));
+
+//Needed for rate limiting to work on Render (if not set, rate would count for all users on Render)
+app.set('trust proxy', 1);
+
+// This limiter is attached to the login route, allows for 5 login attempts per 15 minutes 
+// Dampens speed of bruteforce attacks
+const loginLimiter = rateLimit({
+	windowMs: 15 * 60 * 1000,
+	limit: 5,
+	standardHeaders: 'draft-8', 
+	legacyHeaders: false, 
+	ipv6Subnet: 56,
+});
+
 //Initalize OpenAI client
 const AI = new OpenAI(process.env.OPENAI_API_KEY);
 
 //Establish Postgres Connection
-
 const client = new Pool({
-  user: 'chefsdb_user',
+  user: process.env.POSTGRES_USER,
   password: process.env.POSTGRES_PASSWORD,  
-  host: 'dpg-d4oerl2dbo4c73f1otc0-a.oregon-postgres.render.com',
+  host: process.env.POSTGRES_HOST,
   port: 5432,
-  database: 'chefsdb',
+  database: process.env.DATABASE,
   ssl: { rejectUnauthorized: false }  // REQUIRED on Render
 });
 
@@ -52,6 +80,31 @@ const isValidTikTokUrl = (value) => {
   } catch {
     return false;
   }
+};
+
+// Authentication Middleware
+// Used in routes that require user authentication (saving, posting, editing recipies, etc...)
+const auth = async (req, res, next) => {
+  const sid = req.cookies.sid;
+
+  if (!sid) {
+    return res.status(401).json({ ok: false, error:"Session Expired"})
+  }
+
+  try {
+    const sidQuery = await client.query(`SELECT user_id FROM sessions WHERE sid = $1 AND expires_at > now()`,[sid]);
+
+    if (sidQuery.rows.length === 0) {
+      return res.status(401).json({ ok: false, error:"Session Expired"})
+    }
+    else {
+      req.user = { id: sidQuery.rows[0].user_id}
+      return next();
+    }
+  } catch {
+    return res.status(500).json({ ok: false, error:"Authentication Failed"})
+  }
+  
 };
 
 // External client
@@ -195,7 +248,7 @@ app.get('/api/details', async (req,res) => {
       res.json({ ok: true, data: result.rows });
 });
 
-app.post('/api/v1/login', async (req,res) => {
+app.post('/api/v1/login', loginLimiter, async (req,res) => {
   const data = req.body;
 
   let result;
@@ -215,14 +268,15 @@ app.post('/api/v1/login', async (req,res) => {
         const resultPass = await client.query(`select password from users where userid = $1;`,[userID]);
 
         //Check hashed password with bcrypt
-        if (bcrypt.compareSync(data.password,resultPass.rows[0].password)) {
+        const valid = await bcrypt.compare(data.password,resultPass.rows[0].password);
+        if (valid) {
           // User has input the correct login information
           // Creates / updates cookie, valid for 2 days
           const sessionID = crypto.randomUUID();
           res.cookie('sid', sessionID, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
+            sameSite: 'strict',
             maxAge: 1000 * 60 * 60 * 24 * 2,
             path: '/'
           });
@@ -259,7 +313,7 @@ app.post('/api/v1/register', async (req,res) => {
 
   //Hash the password using bcrypt
   const plaintextPassword = data.password;
-  const hash = bcrypt.hashSync(plaintextPassword, 12);
+  const hash = await bcrypt.hash(plaintextPassword, 12);
   
 
   //Insert registration data into database
@@ -288,12 +342,32 @@ app.post('/api/v1/logout', async (req,res) => {
     return res.json({ ok: true })
 });
 
-//Returns true or false depending on the existence of a cookie with the 'sid' field
-app.get('/api/v1/loggedIn', (req,res) => {
+// Light Authentication, only checks the existence of SID cookie. Used for navbar only.
+app.get('/api/v1/auth/light', (req,res) => {
     if (!req.cookies.sid) {
-      return res.json({ loggedIn: false})
+      return res.status(401).json({ ok: false, error:"Session Expired"})
     }
-    else {return res.json({ loggedIn: true})}
+    else {return res.json({ ok: true})}
+    
+});
+
+// Heavy Authentication, checks SID against sessions table 
+app.get('/api/v1/auth/heavy', async (req,res) => {
+    const sid = req.cookies.sid;
+
+    try {
+      const sidQuery = await client.query(`SELECT EXISTS (SELECT sid FROM sessions WHERE sid = $1 AND expires_at > now()) 
+      AS is_valid`,[sid]);
+      const valid = sidQuery.rows[0].is_valid;
+
+      if (!valid) {
+        return res.status(401).json({ ok: false, error:"Session Expired"})
+      }
+      else {return res.json({ ok: true})}
+    } catch {
+      return res.status(500).json({ ok: false, error:"Authentication Failed"})
+    }
+    
     
 });
 
@@ -341,6 +415,18 @@ app.post('/api/v1/register/validate', async (req,res) => {
     return res.json({ok:true,data:issueList});
 });
 
+app.get('/api/v1/savedRecipies', auth, async (req,res) => {
+  const userID = req.user.id;
+
+  //Get saved recipies
+  try {
+    const resultForSavedRecipies = await client.query('SELECT recipe_id FROM user_saved_recipes WHERE user_id = $1',[userID]);
+    return res.json({ ok: true, data: resultForSavedRecipies});
+  } catch {
+    return res.status(500).json({ ok: false, error: "Could not retrieve userID from session" });
+  }
+  
+});
 
 
 
