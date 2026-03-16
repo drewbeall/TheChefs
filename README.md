@@ -1,10 +1,10 @@
 # Welcome to The Chefs!
 
-### The Chefs is an application dedicated to the chefs of tiktok. Our application transforms tiktok videos into easily digestible recipes that anyone can follow. While the site automatically generates a recipe, we use help from the community to refine and elevate these recipes for the best user experience.
+### The Chefs is an forum-like web application dedicated to the chefs of tiktok. Our application transforms tiktok videos into easily digestible recipes that anyone can follow. While the site automatically generates a recipe, we use help from the community to refine and elevate these recipes for the best user experience.
 
 
 ## Hosting
-### https://tiktok-7.onrender.com/index.html
+### https://tiktok-7.onrender.com
 
 We host our application using Render using a docker container. If you'd like to pull this container for yourself, use the following command:
 ```bash
